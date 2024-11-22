@@ -69,7 +69,8 @@ Route::middleware(['auth', 'cekLevel:superadmin,admin'])->group(function(){
         Route::get('suplier/add', 'create');
         Route::post('suplier/add', 'store');
 
-        Route::post('suplier/add', 'edit');
+        Route::get('suplier/edit/{id}', 'edit');
+        Route::post('suplier/edit/{id}', 'update');
     });
 
 
