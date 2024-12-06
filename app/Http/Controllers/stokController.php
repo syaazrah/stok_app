@@ -83,7 +83,12 @@ class stokController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $getDataStokId = stok::with('getSuplier')->find($id);
+        $suplier = suplier::all();
+        return view('Stok.edit-stok', compact(
+            'getDataStokId',
+            'suplier'
+        ));
     }
 
     /**
@@ -91,7 +96,35 @@ class stokController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+       $request->validate([
+        'kode_barang' => 'required',
+        'nama_barang' => 'required',
+        'harga' => 'required',
+        'stok' => 'required',
+        'suplier' => 'required',
+        'cabang' => 'required',
+    ], [
+        'kode_barang.required' => 'Data Wajib Diisi!',
+        'nama_barang.required' => 'Data Wajib Diisi!',
+        'harga.required' => 'Format email tidak sesuai!',       
+        'stok.required' => 'Data Wajib Diisi!',       
+        'suplier.required' => 'Data Wajib Diisi!',       
+        'cabang.required' => 'Data Wajib Diisi!',              
+    ]);
+
+    $saveSuplier = stok::find($id);
+    $saveSuplier->kode_barang = $request->kode_barang;
+    $saveSuplier->nama_barang = $request->nama_barang;
+    $saveSuplier->harga = $request->harga;
+    $saveSuplier->stok = $request->stok;
+    $saveSuplier->suplier_id = $request->suplier;
+    $saveSuplier->cabang = $request->cabang;
+    $saveSuplier->save();
+
+    return redirect('/stok')->with(
+        'message',
+        'Data barang ' . $request->nama_barang . ' berhasil ditambahkan!!'
+    );
     }
 
     /**
