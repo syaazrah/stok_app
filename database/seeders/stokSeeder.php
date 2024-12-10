@@ -32,7 +32,7 @@ class stokSeeder extends Seeder
                 'nama_barang' => $faker->words(10, true),
                 'harga' => $faker->numberBetween(1000, 30000),
                 'stok' => $faker->numberBetween(50, 100),
-                'suplier_id' => $faker->numberBetween(1, 2),
+                'suplier_id' => $faker->numberBetween(1, 10),
                 'cabang' => $randomArea,
             ];
         }
