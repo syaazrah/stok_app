@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\barangKeluar;
+use App\Models\barangMasuk;
 use App\Models\pelanggan;
 use App\Models\stok;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\View;
 
 class barangKeluarController extends Controller
@@ -95,28 +97,67 @@ class barangKeluarController extends Controller
         ));
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
+    public function saveProcess(Request $request){
+        $request->validate([
+            'kode_transaksi' => 'required',
+            'tgl_faktur' => 'required', 
+            'tgl_jatuh_tempo' => 'required',
+            'pelanggan_id' => 'required',
+            'jenis_pembayaran' => 'required',
+            'barang_id' => 'required',
+            'jumlah_beli' => 'required',
+            'harga_jual' => 'required',
+        ],[
+            'kode_transaksi.required' => 'Data Wajib diisi',
+            'tgl_faktur.required' => 'Data Wajib diisi',
+            'tgl_jatuh_tempo.required' => 'Data Wajib diisi',
+            'pelanggan_id.required' => 'Data Wajib diisi',
+            'jenis_pembayaran.required' => 'Data Wajib diisi',
+            'barang_id.required' => 'Data Wajib diisi',
+            'jumlah_beli.required' => 'Data Wajib diisi',
+            'harga_jual.required' => 'Data Wajib diisi',
+        ]);
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
+        $save = new barangKeluar();
+        $save->kode_transaksi = $request->kode_transaksi;
+        $save->tgl_faktur = $request->tgl_faktur;
+        $save->tgl_jatuh_tempo = $request->tgl_jatuh_tempo;
+        $save->pelanggan_id = $request->pelanggan_id;
+        $save->jenis_pembayaran = $request->jenis_pembayaran;
+        $save->barang_id = $request->barang_id;
+        $save->jumlah_beli = $request->jumlah_beli;
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
+            //update jumlah stok yang ada didalam database stok
+            $getStokData = stok::find($request->barang_id);
+                $getSumStokNow = $getStokData->stok;
+            $getStokData->stok = $getSumStokNow - $request->jumlah_beli;
+            $getStokData->save();
+
+        $save->harga_jual = $request->harga_jual;
+
+        $diskon = $request->diskon;
+        $nilaiDiskon = $diskon/100;
+        
+        if ($diskon) {
+            $save->diskon = $request->diskon;
+                $hitung = $request->jumlah_beli * $request->harga_jual;
+                $totalDiskon = $hitung * $nilaiDiskon;
+                $subTotal = $hitung - $totalDiskon;
+
+            $save->sub_total = $subTotal;
+        } else {
+            $hitung = $request->jumlah_beli * $request->harga_jual;
+            $save->sub_total = $hitung;
+        }
+
+        $save->user_id = Auth::user()->id;
+        $save->tgl_buat = $request->tgl_faktur;
+        $save->save();
+
+        return redirect('/barang-keluar')->with(
+            'message',
+            'Berhasil input barang keluar'
+        );
     }
 
     /**
